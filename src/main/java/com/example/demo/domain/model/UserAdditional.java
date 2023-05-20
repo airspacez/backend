@@ -49,6 +49,7 @@ public class UserAdditional implements UserDetails, Serializable {
 
     @Column(name = "birthday_date")
     private Date birthdayDate;
+
     @JsonIgnore
     @Column(name="username")
     private String username;
@@ -56,6 +57,10 @@ public class UserAdditional implements UserDetails, Serializable {
     @JsonIgnore
     @Column(name="password")
     private String password;
+
+    @JsonIgnore
+    @Column(name="token")
+    private String token;
 
     @Column(name="mobile")
     private String PhoneNumber;

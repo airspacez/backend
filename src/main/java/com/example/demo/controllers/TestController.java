@@ -2,7 +2,6 @@ package com.example.demo.controllers;
 
 import com.example.demo.domain.model.projections.UserAdditionalPropections.UsernameUserProjection;
 import com.example.demo.domain.service.*;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
@@ -23,9 +22,9 @@ public class TestController {
 
     private UserAdditionalService userAdditionalService;
     private GameMemberService gameMemberService;
+    private EmailService emailService;
 
-
-    public TestController(AuthService authService, UserAdditionalService service, GameMemberService serviceGM, GameService serviceG, PlaceService servicePl, GameResultService serviceGr, GameTypeService serviceGt, PlaceService placeService, UserStatisticsService uss, UserAdditionalService userAdditionalService, GameMemberService gameMemberService) {
+    public TestController(AuthService authService, UserAdditionalService service, GameMemberService serviceGM, GameService serviceG, PlaceService servicePl, GameResultService serviceGr, GameTypeService serviceGt, PlaceService placeService, UserStatisticsService uss, UserAdditionalService userAdditionalService, GameMemberService gameMemberService, EmailService emailService) {
         this.service = service;
         this.serviceG = serviceG;
         this.servicePl = servicePl;
@@ -36,6 +35,7 @@ public class TestController {
         this.authService = authService;
         this.userAdditionalService = userAdditionalService;
         this.gameMemberService = gameMemberService;
+        this.emailService = emailService;
     }
 
 
@@ -66,12 +66,28 @@ public class TestController {
         return ResponseEntity.ok(entity);
     }
 
-        @GetMapping("/isUserLoggedIn")
-        public ResponseEntity<?> CheckLoggedIn()
-        {
-            return ResponseEntity.ok(authService.checkIsUserAuthenticated());
-        }
+    @GetMapping("/isUserLoggedIn")
+    public ResponseEntity<?> CheckLoggedIn()
+    {
+        return ResponseEntity.ok(authService.checkIsUserAuthenticated());
+    }
 
+    @GetMapping("/token")
+    public void passwordResetToken(@RequestParam("gmail") String gmail)
+    {
+        var token = userAdditionalService.activateToken(gmail);
+        emailService.sendEmail(gmail, "Токен", "Ваш токен: " + token);
+    }
+
+    @GetMapping("/getUserByEmail")
+    public ResponseEntity<?> getInfoUser(@RequestParam("mail") String mail) {
+        var user = userAdditionalService.getByEmail(mail);
+        if (user.isPresent()) {
+            return ResponseEntity.ok(user.get());
+        } else {
+            return ResponseEntity.ok(false);
+        }
+    }
 
     @GetMapping("/getLastGames")
     public ResponseEntity<?> getLastNGames()
@@ -80,6 +96,8 @@ public class TestController {
         var list = gameMemberService.getLastNGameMembersByUser(entity, PageRequest.of(0, 10));
         return ResponseEntity.ok(list);
     }
+
+
 
 
 
@@ -99,7 +117,6 @@ public class TestController {
     @GetMapping("/games/{id}")
     public ResponseEntity<?> getGameDetails(@PathVariable int id)
     {
-
         var entity = serviceG.getByIDWithMembers(id);
         if(entity.isPresent()) {
             return ResponseEntity.ok(entity);

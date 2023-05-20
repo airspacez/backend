@@ -5,9 +5,12 @@ import com.example.demo.domain.model.projections.UserAdditionalPropections.UserA
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 public interface UserAdditionalRepository extends JpaRepository<UserAdditional,Integer> {
     @Transactional
@@ -31,4 +34,12 @@ public interface UserAdditionalRepository extends JpaRepository<UserAdditional,I
     <T extends UserAdditionalProjection> Page<T> findBySearchString(@Param("searchString") String searchString,
                                                                     Pageable pageable, Class<T> projectionType);
 
+    @Modifying
+    @Transactional
+    @Query("UPDATE UserAdditional u SET u.token = :token WHERE u.Email = :email")
+    void updateTokenByEmail(@Param("token") String token, @Param("email") String email);
+
+    @Transactional
+    @Query("SELECT u FROM UserAdditional u WHERE u.Email = :email")
+    Optional<UserAdditional> findByUserEmail(@Param("email") String Email);
 }

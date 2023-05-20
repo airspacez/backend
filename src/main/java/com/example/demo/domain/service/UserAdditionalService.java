@@ -1,5 +1,6 @@
 package com.example.demo.domain.service;
-
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import com.example.demo.domain.entityModel.PageModel;
 import com.example.demo.domain.model.ClubRole;
 import com.example.demo.domain.model.GameMember;
@@ -7,6 +8,7 @@ import com.example.demo.domain.model.UserAdditional;
 import com.example.demo.domain.model.projections.UserAdditionalPropections.UserAdditionalProjection;
 import com.example.demo.domain.repository.ClubRoleRepository;
 import com.example.demo.domain.repository.UserAdditionalRepository;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -19,6 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+
+import static com.fasterxml.jackson.databind.type.LogicalType.DateTime;
 
 @Service
 public class UserAdditionalService {
@@ -36,9 +40,7 @@ public class UserAdditionalService {
     public Page<UserAdditional> getAll(Pageable pageable)
     {
         return repository.findAll(pageable);
-
     }
-
 
     public Page<UserAdditional> getAllBySearchString(String searchString, Pageable pageable)
     {
@@ -58,9 +60,20 @@ public class UserAdditionalService {
             throw new Exception(UserAdditional.class.getName() +" class entity with id " + UserAdditional.getId() + " is already exist");
     }
 
+    public String activateToken(String mail){
+        String token = DigestUtils.md5Hex(String.valueOf(System.currentTimeMillis())).toUpperCase();
+        repository.updateTokenByEmail(token, mail);
+        return token;
+    }
+
     public Optional<UserAdditional> getByID(Integer id)
     {
         return repository.findById(id);
+    }
+
+    public Optional<UserAdditional> getByEmail(String email)
+    {
+        return repository.findByUserEmail(email);
     }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class, NoSuchElementException.class})
