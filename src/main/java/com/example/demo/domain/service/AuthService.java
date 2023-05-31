@@ -22,6 +22,7 @@ public class AuthService {
     @Transactional(readOnly = true, propagation = Propagation.REQUIRED)
     public UserAdditional GetAuthenticatedUserData()
     {
+
         var user = (UserAdditional) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return  repository.findById(user.getId()).get();
     }

@@ -23,9 +23,11 @@ public class ClubStatus {
     @Column(name="StatusDesc")
     private String Description;
 
+    @JsonIgnore
     @Column(name="ReportGroup")
     private String ReportGroup;
 
+    @JsonIgnore
     @Column(name="DefaultRow")
     private Boolean isDefaultRow;
 

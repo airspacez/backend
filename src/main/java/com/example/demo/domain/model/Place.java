@@ -38,4 +38,7 @@ public class Place {
     @JsonIgnore
     @OneToMany(mappedBy = "Place", fetch = FetchType.LAZY)
     private List<Game> GamesInThisPlace;
+
+
+
 }

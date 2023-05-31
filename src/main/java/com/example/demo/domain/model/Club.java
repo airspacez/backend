@@ -31,7 +31,7 @@ public class Club {
     @Column(name = "ReportGroup")
     private String ReportGroup;
 
-    @JsonIgnoreProperties({"ClubsOfCity", "PlacesOfCity", "hibernateLazyInitializer", "handler"})
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="CityID", nullable=true)
     private City City;

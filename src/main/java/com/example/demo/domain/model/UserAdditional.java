@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.sql.Date;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -50,7 +51,6 @@ public class UserAdditional implements UserDetails, Serializable {
     @Column(name = "birthday_date")
     private Date birthdayDate;
 
-    @JsonIgnore
     @Column(name="username")
     private String username;
 
@@ -80,22 +80,22 @@ public class UserAdditional implements UserDetails, Serializable {
     @OneToMany(mappedBy = "User", fetch=FetchType.LAZY)
     private List<GameMember> Members;
 
+
     @JsonIgnore
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-            name="roles",
-            joinColumns = @JoinColumn(name="UserID"),
-            inverseJoinColumns = @JoinColumn(name="RoleID")
-    )
-    private List<ClubRole> Roles;
+    @OneToMany(mappedBy = "user", fetch=FetchType.LAZY)
+    private List<UserInEvent> userInEvents;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name="roleID", nullable=false)
+    private ClubRole Role;
 
     @JsonIgnore
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
 
-        return Roles.stream()
-                .map(role -> new SimpleGrantedAuthority(role.getDescription()))
-                .collect(Collectors.toList());
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority(Role.getDescription()));
+        return authorities;
     }
 
     @JsonIgnore

@@ -1,9 +1,7 @@
 package com.example.demo.domain.service;
 
-import com.example.demo.domain.model.Game;
 import com.example.demo.domain.model.UserStatistics;
 import com.example.demo.domain.model.projections.UserStatistics.ShortUserRatings;
-import com.example.demo.domain.repository.GameRepository;
 import com.example.demo.domain.repository.UserStatisticsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;

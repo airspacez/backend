@@ -26,6 +26,6 @@ public class ClubRole {
     private String Description;
 
     @JsonIgnore
-    @ManyToMany(mappedBy = "Roles", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "Role", fetch = FetchType.LAZY)
     private List<UserAdditional> usersWithThisRole;
 }

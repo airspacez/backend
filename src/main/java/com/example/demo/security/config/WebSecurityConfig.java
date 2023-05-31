@@ -10,12 +10,14 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 
+
+
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final UserDetailsServiceImpl userDetailsService;
-    private RestAuthEntryPoint restAuthEntryPoint;
+    private final RestAuthEntryPoint restAuthEntryPoint;
 
     public WebSecurityConfig(UserDetailsServiceImpl userDetailsService, RestAuthEntryPoint restAuthEntryPoint) {
         this.userDetailsService = userDetailsService;
@@ -25,6 +27,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
+
     }
     @Bean
     public PasswordEncoder passwordEncoder() {

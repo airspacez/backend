@@ -14,3 +14,5 @@ public interface UsernameUserProjection extends UserAdditionalProjection {
     String getNickname();
     Boolean getIsMale();
 }
+
+

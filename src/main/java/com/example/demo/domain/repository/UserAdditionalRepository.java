@@ -2,6 +2,7 @@ package com.example.demo.domain.repository;
 
 import com.example.demo.domain.model.UserAdditional;
 import com.example.demo.domain.model.projections.UserAdditionalPropections.UserAdditionalProjection;
+import com.example.demo.domain.model.projections.UserAdditionalPropections.UsernameUserProjection;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -10,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface UserAdditionalRepository extends JpaRepository<UserAdditional,Integer> {
@@ -42,4 +44,10 @@ public interface UserAdditionalRepository extends JpaRepository<UserAdditional,I
     @Transactional
     @Query("SELECT u FROM UserAdditional u WHERE u.Email = :email")
     Optional<UserAdditional> findByUserEmail(@Param("email") String Email);
+
+
+    @Transactional
+    @Query("SELECT u FROM UserAdditional u WHERE u.Id = :id")
+    <T extends  UserAdditionalProjection> Optional<T> getUserByProjectionById(@Param("id") Integer id, Class<T> projectionType);
+
 }

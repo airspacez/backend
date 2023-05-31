@@ -1,5 +1,6 @@
 package com.example.demo;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -21,7 +22,7 @@ public class DemoApplication {
 	{
 		return new WebMvcConfigurer() {
 			@Override
-			public void addCorsMappings(CorsRegistry registry) {
+			public void addCorsMappings(@NotNull CorsRegistry registry) {
 				registry.addMapping("/**").allowedOrigins("http://localhost:3000").allowCredentials(true).allowedMethods("*").allowedHeaders("*");
 			}
 		};

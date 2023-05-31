@@ -1,11 +1,7 @@
 package com.example.demo.domain.service;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import com.example.demo.domain.entityModel.PageModel;
-import com.example.demo.domain.model.ClubRole;
-import com.example.demo.domain.model.GameMember;
 import com.example.demo.domain.model.UserAdditional;
 import com.example.demo.domain.model.projections.UserAdditionalPropections.UserAdditionalProjection;
+import com.example.demo.domain.model.projections.UserAdditionalPropections.UsernameUserProjection;
 import com.example.demo.domain.repository.ClubRoleRepository;
 import com.example.demo.domain.repository.UserAdditionalRepository;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -17,24 +13,26 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-
-import static com.fasterxml.jackson.databind.type.LogicalType.DateTime;
+import java.sql.Date;
+import java.util.*;
 
 @Service
 public class UserAdditionalService {
     @Autowired
     private final UserAdditionalRepository repository;
     @Autowired
-    private final ClubRoleService ServiceC;
+    private final ClubRoleService clubRoleService;
+    @Autowired
+    private final ClubService clubService;
+    @Autowired
+    private final ClubStatusService clubStatusService;
 
-    public UserAdditionalService(UserAdditionalRepository UserAdditionalRepository, ClubRoleRepository repositoryC, ClubRoleService serviceC) {
+    public UserAdditionalService(UserAdditionalRepository UserAdditionalRepository, ClubRoleRepository repositoryC, ClubRoleService serviceC, ClubService clubService, ClubStatusService clubStatusService) {
         this.repository = UserAdditionalRepository;
 
-        ServiceC = serviceC;
+        clubRoleService = serviceC;
+        this.clubService = clubService;
+        this.clubStatusService = clubStatusService;
     }
 
     public Page<UserAdditional> getAll(Pageable pageable)
@@ -50,6 +48,12 @@ public class UserAdditionalService {
      public <T extends UserAdditionalProjection> Page<T> getAllBySearchString(String searchString, Pageable pageable, Class<T> type)
     {
         return repository.findBySearchString(searchString, pageable, type);
+    }
+
+
+    public <T extends UserAdditionalProjection> Optional<T> getByProjectionById(int id,  Class<T> type)
+    {
+        return repository.getUserByProjectionById(id, type);
     }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
@@ -86,6 +90,7 @@ public class UserAdditionalService {
             throw new Exception(UserAdditional.class.getName() +" class entity with id " + id + " is already attached to Game entity");
     }
 
+
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
     public void update(@NotNull UserAdditional UserAdditional) throws Exception {
         if (repository.findById(UserAdditional.getId()).isPresent())
@@ -96,26 +101,51 @@ public class UserAdditionalService {
 
 
 
-    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class, })
-    public void setRoles(@NotNull Integer userId,@NotNull List<Integer> rolesId) throws Exception {
-        List<ClubRole> roles = new ArrayList<>();
-        if (rolesId.isEmpty()) throw new Exception("No roles to set");
-        Optional<UserAdditional> User = repository.findById(userId);
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
+    public void patch(int id, Map<String, Object> updates) throws Exception {
+        var existingUser = repository.findById(id);
+        if (existingUser.isPresent()) {
 
-        if (User.isEmpty()) throw new Exception("User with id " + userId + "not found");
+            for (Map.Entry<String, Object> entry : updates.entrySet()) {
+                String field = entry.getKey();
+                Object value = entry.getValue();
 
-        for(Integer id:rolesId)
-        {
-            Optional<ClubRole> role = ServiceC.GetByID(id);
-            if(role.isPresent()) {
-                roles.add(role.get());
-                role.get().getUsersWithThisRole().add(User.get());
+                switch (field) {
+                    case "altNickname" -> existingUser.get().setAltNickname((String) value);
+                    case "nickname" -> existingUser.get().setNickname((String) value);
+                    case "name" -> existingUser.get().setName((String) value);
+                    case "email" -> existingUser.get().setEmail((String) value);
+                    case "isMale" -> existingUser.get().setIsMale((Boolean) value);
+                    case "photoImagePath" -> existingUser.get().setPhotoImagePath((String) value);
+                    case "username" -> existingUser.get().setUsername((String) value);
+                    case "phoneNumber" -> existingUser.get().setPhoneNumber((String) value);
+                    case "isArchived" -> existingUser.get().setIsArchived((Boolean) value);
+                    case "birthdayDate" -> {if (value!=null) { existingUser.get().setBirthdayDate(Date.valueOf((String)value));} else {existingUser.get().setBirthdayDate(null);}}
+                    case "club" -> {
+                        var club = clubService.GetByID((Integer) value);
+                        club.ifPresent(club1 -> existingUser.get().setClub(club1));
+                    }
+                    case "status" -> {
+                        var status = clubStatusService.GetByID((Integer) value);
+                        status.ifPresent(status1 -> existingUser.get().setStatus(status1));
+                    }
+                    case "role" -> {
+                        var role = clubRoleService.GetByID((Integer) value);
+                        role.ifPresent(role1 -> existingUser.get().setRole(role1));
+                    }
+                    default -> {
+                    }
+                    // Игнорирование неизвестных полей
+                }
             }
-            else throw new Exception("No such role with id " + id + "in database");
-
+            repository.save(existingUser.get());
         }
-        User.get().setRoles(roles);
+        else
+            throw new Exception(UserAdditional.class.getName() +" class entity with id " + id + " does not exist");
     }
+
+
+
 
 
 }
