@@ -19,25 +19,19 @@ public class Club {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="ClubID")
     private Integer Id;
-
     @JsonIgnore
     @Column(name = "DefaultClub")
     private Boolean isDefaultClub;
-
     @Column(name = "ClubName")
     private String ClubName;
-
     @JsonIgnore
     @Column(name = "ReportGroup")
     private String ReportGroup;
-
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="CityID", nullable=true)
     private City City;
-
     @JsonIgnore
     @OneToMany(mappedBy = "Club", fetch = FetchType.LAZY)
     private List<UserAdditional> usersOfCLub;
-
 }

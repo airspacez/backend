@@ -4,6 +4,7 @@ package com.example.demo.domain.service;
 import com.example.demo.domain.entityModel.GameModel;
 import com.example.demo.domain.entityModel.PageModel;
 import com.example.demo.domain.model.Game;
+import com.example.demo.domain.model.GameMember;
 import com.example.demo.domain.repository.GameRepository;
 import org.hibernate.Hibernate;
 import org.jetbrains.annotations.NotNull;
@@ -16,15 +17,24 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
-import java.sql.Date;
 import java.util.*;
 
 @Service
 public class GameService {
     @Autowired
     private final GameRepository repository;
-    public GameService(GameRepository GameRepository) {
+
+    @Autowired
+    private final GameMemberService memberService;
+
+
+    @Autowired
+    private final AnaliticsService analiticsService;
+
+    public GameService(GameRepository GameRepository, GameMemberService memberService, AnaliticsService analiticsService) {
         this.repository = GameRepository;
+        this.memberService = memberService;
+        this.analiticsService = analiticsService;
     }
 
     public Page<Game> getAll(Pageable pageable)
@@ -134,6 +144,18 @@ public class GameService {
             return game.get();
         }
         return null;
+    }
+
+
+
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
+    public void setGameAndMembersAndComputeRating(Game gameData, List<GameMember> members) throws Exception {
+        var game = repository.save(gameData);
+        for (var member:members) {
+            memberService.save(member);
+        }
+        analiticsService.computeRatingOfUsersByGame(game);
+
     }
 
 

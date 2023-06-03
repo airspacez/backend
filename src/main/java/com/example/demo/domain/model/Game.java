@@ -9,7 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
-import java.sql.Date;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -29,7 +29,7 @@ public class Game {
     private Place Place;
 
     @Column(name="GameDate")
-    private Date Date;
+    private java.util.Date Date;
 
     @Column(name="GameTable")
     private Integer Table;

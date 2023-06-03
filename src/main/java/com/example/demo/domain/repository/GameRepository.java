@@ -21,9 +21,7 @@ public interface GameRepository extends JpaRepository<Game,Integer> {
                 "(:placeId IS NULL OR g.Place.Id = :placeId) AND " +
                 "(:typeId IS NULL OR g.Type.Id = :typeId) AND " +
                 "(:gameResultId IS NULL OR g.Result.Id = :gameResultId)"
-
         )
-
         Page<Game> findGamesByCriteria(@Param("gameDay") Integer gameDay, @Param("gameMonth") Integer gameMonth, @Param("gameYear") Integer gameYear, @Param("typeId") Integer typeId,  @Param("placeId") Integer placeId, @Param("gameResultId") Integer gameResultId, Pageable pageable);
 
     }

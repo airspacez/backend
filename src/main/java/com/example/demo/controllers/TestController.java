@@ -1,9 +1,10 @@
 package com.example.demo.controllers;
 
+import com.example.demo.domain.model.projections.UserAdditionalPropections.UsernameUserWithRatingProjection;
+import com.example.demo.domain.service.AnaliticsService;
 import com.example.demo.domain.model.Club;
 import com.example.demo.domain.model.CompositeKeys.UserInEventPK;
 import com.example.demo.domain.model.Place;
-import com.example.demo.domain.model.UserInEvent;
 import com.example.demo.domain.model.projections.EventProjections.EventWithUserUsernameList;
 import com.example.demo.domain.model.projections.UserAdditionalPropections.UsernameUserProjection;
 import com.example.demo.domain.service.*;
@@ -13,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Calendar;
 import java.util.Map;
 
 
@@ -20,7 +22,7 @@ import java.util.Map;
 public class TestController {
 
     private UserAdditionalService service;
-    private final GameService serviceG;
+    private final GameService gameService;
     private PlaceService servicePl;
     private final GameResultService serviceGr;
     private final GameTypeService serviceGt;
@@ -33,15 +35,18 @@ public class TestController {
     private final EventService eventService;
 
     private final UserInEventService userInEventService;
+    private final AnaliticsService analiticsService;
 
     private final UserAdditionalService userAdditionalService;
     private final GameMemberService gameMemberService;
     private final EmailService emailService;
     private final ClubStatusService clubStatusService;
 
-    public TestController(AuthService authService, UserAdditionalService service, GameMemberService serviceGM, GameService serviceG, PlaceService servicePl, GameResultService serviceGr, GameTypeService serviceGt, PlaceService placeService, UserStatisticsService uss, CityService cityService, ClubRoleService roleService, ClubService clubService, EventService eventService, UserInEventService userInEventService, UserAdditionalService userAdditionalService, GameMemberService gameMemberService, EmailService emailService, ClubStatusService clubStatusService) {
+    private final StatisticsOfUserService statisticsOfUserService;
+
+    public TestController(AuthService authService, UserAdditionalService service, GameMemberService serviceGM, GameService serviceG, PlaceService servicePl, GameResultService serviceGr, GameTypeService serviceGt, PlaceService placeService, UserStatisticsService uss, CityService cityService, ClubRoleService roleService, ClubService clubService, EventService eventService, UserInEventService userInEventService, AnaliticsService analiticsService, UserAdditionalService userAdditionalService, GameMemberService gameMemberService, EmailService emailService, ClubStatusService clubStatusService, StatisticsOfUserService statisticsOfUserService) {
         this.service = service;
-        this.serviceG = serviceG;
+        this.gameService = serviceG;
         this.servicePl = servicePl;
         this.serviceGr = serviceGr;
         this.serviceGt = serviceGt;
@@ -53,10 +58,12 @@ public class TestController {
         this.clubService = clubService;
         this.eventService = eventService;
         this.userInEventService = userInEventService;
+        this.analiticsService = analiticsService;
         this.userAdditionalService = userAdditionalService;
         this.gameMemberService = gameMemberService;
         this.emailService = emailService;
         this.clubStatusService = clubStatusService;
+        this.statisticsOfUserService = statisticsOfUserService;
     }
 
 
@@ -98,10 +105,10 @@ public class TestController {
     }
 
     @GetMapping("/token")
-    public void passwordResetToken(@RequestParam("gmail") String gmail)
+    public void passwordResetToken(@RequestParam("mail") String mail)
     {
-        var token = userAdditionalService.activateToken(gmail);
-        emailService.sendEmail(gmail, "Токен", "Ваш токен: " + token);
+        var token = userAdditionalService.activateToken(mail);
+        emailService.sendEmail(mail, "Токен", "Ваш токен: " + token);
     }
 
     @GetMapping("/getUserByEmail")
@@ -142,7 +149,7 @@ public class TestController {
     @GetMapping("/games/{id}")
     public ResponseEntity<?> getGameDetails(@PathVariable int id)
     {
-        var entity = serviceG.getByIDWithMembers(id);
+        var entity = gameService.getByIDWithMembers(id);
         if(entity.isPresent()) {
             return ResponseEntity.ok(entity);
         }
@@ -156,7 +163,7 @@ public class TestController {
     @GetMapping("/archive")
     public ResponseEntity<?> getGames(@RequestParam("page") int page, @RequestParam("count") int count)
     {
-        var list = serviceG.getAllGamesArhived(PageRequest.of(page,count));
+        var list = gameService.getAllGamesArhived(PageRequest.of(page,count));
         return ResponseEntity.ok(list);
     }
 
@@ -170,7 +177,7 @@ public class TestController {
                                           @RequestParam("page") Integer page,
                                           @RequestParam("count") Integer count)
     {
-        var list = serviceG.getAllGamesArchivedByDate(day, month, year, typeId, placeId, gameResultId, PageRequest.of(page,count));
+        var list = gameService.getAllGamesArchivedByDate(day, month, year, typeId, placeId, gameResultId, PageRequest.of(page,count));
         return ResponseEntity.ok(list);
     }
 
@@ -254,6 +261,19 @@ public class TestController {
         try {
                 userAdditionalService.patch(id, updates);
                 return ResponseEntity.ok().build();
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred during user update: "+ e.getMessage());
+        }
+    }
+
+
+    @PatchMapping("/usersInEvents/{eventId}/tableNo/{tableNo}")
+    public ResponseEntity<?> setleadToTableonevent(@PathVariable("eventId") int id, @PathVariable("tableNo") int tableNo,  @RequestBody Map<String, Object> updates)
+    {
+        try {
+            userInEventService.setLeadToTableOnEvent(id, tableNo, updates);
+            return ResponseEntity.ok().build();
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred during user update: "+ e.getMessage());
@@ -459,6 +479,14 @@ public class TestController {
     }
 
 
+    @GetMapping("/events/{id}/userStatistics")
+    public ResponseEntity<?> getUserStatistics(@PathVariable(name="id") Integer id)
+    {
+        var result = statisticsOfUserService.getAllStatisticsOfUsersByEventId(id);
+        return ResponseEntity.ok(result);
+    }
+
+
     @PatchMapping("/usersInEvents/{userId}/{eventId}")
     public ResponseEntity<?> patchUserInEvent(@PathVariable(name="userId") Integer userId, @PathVariable(name="eventId") Integer eventId, @RequestBody Map<String, Object> updates)
     {
@@ -519,7 +547,7 @@ public class TestController {
         }
     }
 
-    @DeleteMapping("usersInEvents/{userId}/{eventId}")
+    @DeleteMapping("/usersInEvents/{userId}/{eventId}")
     public ResponseEntity<?> deleteUserInEvent(@PathVariable(name="userId") Integer userId, @PathVariable(name="eventId") Integer eventId)
     {
         try {
@@ -531,6 +559,32 @@ public class TestController {
         }
     }
 
+    @GetMapping("/distribute/{id}")
+    public ResponseEntity<?> distribute(@PathVariable("id") Integer id)
+    {
+        var data = analiticsService.breakUsersByTables(id, UsernameUserWithRatingProjection.class);
+        return ResponseEntity.ok(data);
+    }
+
+
+    @GetMapping("/users/{id}/getGamesCountForLatest{count}Days")
+    public ResponseEntity<?> getLastdays(@PathVariable("id") Integer id, @PathVariable("count") Integer count)
+    {
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_MONTH, -count);
+        java.util.Date startDate =  calendar.getTime();
+        var data = analiticsService.countGamesPlayedSinceDateByUserById(id, startDate );
+        return ResponseEntity.ok(data);
+    }
+
+    @GetMapping("/users/leads")
+    public ResponseEntity<?> getAllLeads()
+    {
+
+        var data = userAdditionalService.getAllByRoleId(3, UsernameUserProjection.class);
+        return ResponseEntity.ok(data);
+    }
 
 
 

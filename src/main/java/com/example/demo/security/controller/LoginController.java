@@ -16,7 +16,7 @@ public class LoginController {
     public LoginController(AuthService serviceA) {
         this.serviceA = serviceA;
     }
-
+    
     @GetMapping("/auth/principal")
     public ResponseEntity<?> getAuthData()
     {

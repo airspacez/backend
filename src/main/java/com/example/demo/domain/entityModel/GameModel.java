@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.lang.Nullable;
 
 import javax.persistence.*;
-import java.sql.Date;
+import java.util.Date;
 import java.util.List;
 
 @Data
@@ -21,7 +21,7 @@ public class GameModel {
 
     private Place Place;
 
-    private Date Date;
+    private java.util.Date Date;
 
     private Integer Table;
 

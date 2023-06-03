@@ -90,6 +90,11 @@ public class UserAdditional implements UserDetails, Serializable {
     private ClubRole Role;
 
     @JsonIgnore
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="userId")
+    private StatisticsOfUser statistics;
+
+    @JsonIgnore
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
 

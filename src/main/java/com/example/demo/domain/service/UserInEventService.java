@@ -99,6 +99,30 @@ public class UserInEventService {
             throw new Exception(UserInEvent.class.getName() +" class entity with id " + userId + " and " + eventId + " does not exist");
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
+    public void setLeadToTableOnEvent(Integer eventId, Integer tableNo,  Map<String, Object> updates) throws Exception {
+        var existingEntity = repository.getByEventIdAndTableNumber(eventId, tableNo);
+
+        for (var entity:existingEntity)
+        {
+
+
+            for (Map.Entry<String, Object> entry : updates.entrySet()) {
+                String field = entry.getKey();
+                Object value = entry.getValue();
+
+                // Игнорирование неизвестных полей
+                if ("leadId".equals(field)) {
+                    entity.setLeadId((Integer) value);
+                }
+            }
+
+            repository.save(entity);
+
+        }
+
+    }
+
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
     public void save(Integer userId, Integer eventId, Map<String, Object> updates) throws Exception {

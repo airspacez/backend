@@ -19,7 +19,7 @@ public interface UserInEventRepository extends JpaRepository<UserInEvent, UserIn
     @Transactional
     @Query("SELECT uie FROM UserInEvent uie WHERE uie.id.eventId = :eventId")
     List<UserProjection> getUsersOfEventByIdByUsernameProjection(@Param("eventId") Integer eventId);
-
-
-
+    @Transactional
+    @Query("SELECT uie FROM UserInEvent uie WHERE uie.id.eventId = :eventId AND uie.tableNumber = :tableNo")
+    List<UserInEvent> getByEventIdAndTableNumber(@Param("eventId") Integer eventId, @Param("tableNo") Integer tableNo);
 }

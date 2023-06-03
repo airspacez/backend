@@ -76,6 +76,8 @@ public class EventService {
     public Event save( Map<String, Object> updates) throws Exception {
 
         Event newEvent = new Event();
+        newEvent.setDistributed(false);
+        newEvent.setState("Не начато");
             for (Map.Entry<String, Object> entry : updates.entrySet()) {
                 String field = entry.getKey();
                 Object value = entry.getValue();
@@ -88,6 +90,7 @@ public class EventService {
                         var place = placeService.getByID((Integer)value);
                         place.ifPresent(newEvent::setPlace);
                     }
+
                     default -> {
                     }
                     // Игнорирование неизвестных полей

@@ -40,6 +40,11 @@ public class UserAdditionalService {
         return repository.findAll(pageable);
     }
 
+    public <T extends UserAdditionalProjection> List<T> getAllByRoleId(int id, Class<T> projectionType)
+    {
+        return repository.findUsersByRoleId(id, projectionType);
+    }
+
     public Page<UserAdditional> getAllBySearchString(String searchString, Pageable pageable)
     {
         return repository.findBySearchString(searchString, pageable);
@@ -49,6 +54,7 @@ public class UserAdditionalService {
     {
         return repository.findBySearchString(searchString, pageable, type);
     }
+
 
 
     public <T extends UserAdditionalProjection> Optional<T> getByProjectionById(int id,  Class<T> type)
@@ -91,6 +97,7 @@ public class UserAdditionalService {
     }
 
 
+
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
     public void update(@NotNull UserAdditional UserAdditional) throws Exception {
         if (repository.findById(UserAdditional.getId()).isPresent())
@@ -98,7 +105,6 @@ public class UserAdditionalService {
         else
             throw new Exception(UserAdditional.class.getName() +" class entity with id " + UserAdditional.getId() + " does not exist");
     }
-
 
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})

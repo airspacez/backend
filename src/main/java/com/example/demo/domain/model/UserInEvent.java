@@ -37,5 +37,10 @@ public class UserInEvent {
     @Column(name="appeared")
     private Boolean appeared;
 
+    @Column(name="table_number")
+    private Integer tableNumber;
+
+    @Column(name="lead_id")
+    private Integer leadId;
 
 }

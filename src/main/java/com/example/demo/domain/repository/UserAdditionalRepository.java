@@ -11,10 +11,14 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Date;
 import java.util.List;
 import java.util.Optional;
 
 public interface UserAdditionalRepository extends JpaRepository<UserAdditional,Integer> {
+
+
+
     @Transactional
     UserAdditional findByUsername(String username);
 
@@ -49,5 +53,10 @@ public interface UserAdditionalRepository extends JpaRepository<UserAdditional,I
     @Transactional
     @Query("SELECT u FROM UserAdditional u WHERE u.Id = :id")
     <T extends  UserAdditionalProjection> Optional<T> getUserByProjectionById(@Param("id") Integer id, Class<T> projectionType);
+
+
+    @Transactional
+    @Query("SELECT u FROM UserAdditional u WHERE u.Role.Id = :id")
+    <T extends UserAdditionalProjection> List<T> findUsersByRoleId(@Param("id") int id, Class<T> projectionType);
 
 }

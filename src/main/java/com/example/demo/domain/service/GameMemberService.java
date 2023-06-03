@@ -1,10 +1,10 @@
 package com.example.demo.domain.service;
 
 import com.example.demo.domain.model.CompositeKeys.GameMemberPK;
-import com.example.demo.domain.model.Game;
 import com.example.demo.domain.model.GameMember;
 import com.example.demo.domain.model.UserAdditional;
 import com.example.demo.domain.repository.GameMemberRepository;
+import com.example.demo.domain.repository.UserAdditionalRepository;
 import org.hibernate.Hibernate;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,19 +13,23 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class GameMemberService {
     @Autowired
     private final GameMemberRepository repository;
 
-    public GameMemberService(GameMemberRepository GameMemberRepository) {
+    @Autowired
+    private final UserAdditionalRepository userAdditionalRepository;
+
+    public GameMemberService(GameMemberRepository GameMemberRepository, UserAdditionalRepository userAdditionalRepository) {
         this.repository = GameMemberRepository;
+        this.userAdditionalRepository = userAdditionalRepository;
     }
 
     public List<GameMember> getAll()
@@ -55,6 +59,17 @@ public class GameMemberService {
 
         repository.save(GameMember);
     }
+
+    @Transactional
+    public int countRecentGameDaysForUser(int id, Date number) {
+        return repository.countGamesPlayedSinceDate(id, number);
+    }
+
+    @Transactional
+    public GameMember save(@NotNull GameMember gameMember) {
+        return repository.save(gameMember);
+    }
+
 
     @Transactional
     public Optional<GameMember> getById(GameMemberPK gameMemberPK)

@@ -33,6 +33,12 @@ public class Event {
     @Column(name="datetime")
     private Timestamp datetime;
 
+    @Column(name="state")
+    private String state;
+
+    @Column(name="is_users_distributed")
+    private Boolean distributed;
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name="PlaceID", nullable=false)
     private Place place;

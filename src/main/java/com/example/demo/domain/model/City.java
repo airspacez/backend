@@ -19,17 +19,12 @@ public class City {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="CityID")
     private Integer Id;
-
     @JsonIgnore
     @OneToMany(mappedBy = "City", fetch = FetchType.LAZY)
     private List<Club> ClubsOfCity;
-
     @JsonIgnore
     @OneToMany(mappedBy = "City", fetch = FetchType.LAZY)
     private List<Place> PlacesOfCity;
-
     @Column(name = "CityName")
     private String Name;
-
-
 }

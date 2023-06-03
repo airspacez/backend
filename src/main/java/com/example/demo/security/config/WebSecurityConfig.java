@@ -27,7 +27,6 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
-
     }
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -51,7 +50,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                     .antMatchers("/archive").hasAnyRole( "ADMIN", "USER")
                     .antMatchers("/admin").hasRole("ADMIN")
                     .antMatchers("/ratings").hasAnyRole( "ADMIN", "USER")
-                .antMatchers("/statisticsTest").hasAnyRole("ADMIN", "USER")
+                .antMatchers("/statisticsTest").hasAnyRole("ADMIN", "LEAD", "USER")
                 .antMatchers("/getUserData").authenticated()
 
                     .anyRequest().permitAll()
@@ -63,10 +62,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .loginProcessingUrl("/auth")
                     .successHandler((request, response, authentication) -> {
                         response.setStatus(200);
-
                     })
                     .failureHandler((request, response, authentication) -> {
-
                         response.setStatus(401);
                     })
                 .and()
@@ -77,9 +74,5 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and().httpBasic()
                 .and().cors()
                 .and().csrf().disable();
-
     }
-
-
-
 }
