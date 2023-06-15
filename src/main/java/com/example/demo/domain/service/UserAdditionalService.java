@@ -1,7 +1,6 @@
 package com.example.demo.domain.service;
 import com.example.demo.domain.model.UserAdditional;
 import com.example.demo.domain.model.projections.UserAdditionalPropections.UserAdditionalProjection;
-import com.example.demo.domain.model.projections.UserAdditionalPropections.UsernameUserProjection;
 import com.example.demo.domain.repository.ClubRoleRepository;
 import com.example.demo.domain.repository.UserAdditionalRepository;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -14,7 +13,10 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Service
 public class UserAdditionalService {
@@ -70,10 +72,14 @@ public class UserAdditionalService {
             throw new Exception(UserAdditional.class.getName() +" class entity with id " + UserAdditional.getId() + " is already exist");
     }
 
-    public String activateToken(String mail){
+    public String activateToken(String email){
         String token = DigestUtils.md5Hex(String.valueOf(System.currentTimeMillis())).toUpperCase();
-        repository.updateTokenByEmail(token, mail);
+        repository.updateTokenByEmail(token, email);
         return token;
+    }
+
+    public String getTokenByEmail(String email) {
+        return repository.getToken(email);
     }
 
     public Optional<UserAdditional> getByID(Integer id)
@@ -81,9 +87,12 @@ public class UserAdditionalService {
         return repository.findById(id);
     }
 
-    public Optional<UserAdditional> getByEmail(String email)
-    {
+    public Optional<UserAdditional> getByEmail(String email) {
         return repository.findByUserEmail(email);
+    }
+
+    public void changePassword(String password, String UserEmail) {
+         repository.changePasswordByUserEmail(password, UserEmail);
     }
 
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class, NoSuchElementException.class})
@@ -120,12 +129,12 @@ public class UserAdditionalService {
                     case "altNickname" -> existingUser.get().setAltNickname((String) value);
                     case "nickname" -> existingUser.get().setNickname((String) value);
                     case "name" -> existingUser.get().setName((String) value);
-                    case "email" -> existingUser.get().setEmail((String) value);
+                    case "UserEmail" -> existingUser.get().setUserEmail((String) value);
                     case "isMale" -> existingUser.get().setIsMale((Boolean) value);
                     case "photoImagePath" -> existingUser.get().setPhotoImagePath((String) value);
                     case "username" -> existingUser.get().setUsername((String) value);
                     case "phoneNumber" -> existingUser.get().setPhoneNumber((String) value);
-                    case "isArchived" -> existingUser.get().setIsArchived((Boolean) value);
+                    case "isArchived" -> existingUser.get().setIsArchieved((Boolean) value);
                     case "birthdayDate" -> {if (value!=null) { existingUser.get().setBirthdayDate(Date.valueOf((String)value));} else {existingUser.get().setBirthdayDate(null);}}
                     case "club" -> {
                         var club = clubService.GetByID((Integer) value);
@@ -150,8 +159,53 @@ public class UserAdditionalService {
             throw new Exception(UserAdditional.class.getName() +" class entity with id " + id + " does not exist");
     }
 
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = {Exception.class})
+    public void createUser(Map<String, Object> userFields) {
+        UserAdditional newUser = new UserAdditional();
 
+        for (Map.Entry<String, Object> entry : userFields.entrySet()) {
+            String field = entry.getKey();
+            Object value = entry.getValue();
 
-
+            switch (field) {
+                case "altNickname" -> newUser.setAltNickname((String) value);
+                case "nickname" -> newUser.setNickname((String) value);
+                case "name" -> newUser.setName((String) value);
+                case "userEmail" -> newUser.setUserEmail((String) value);
+                case "isMale" -> newUser.setIsMale((Boolean) value);
+                case "photoImagePath" -> newUser.setPhotoImagePath((String) value);
+                case "username" -> newUser.setUsername((String) value);
+                case "phoneNumber" -> newUser.setPhoneNumber((String) value);
+                case "isArchived" -> newUser.setIsArchieved((Boolean) value);
+                case "birthdayDate" -> {
+                    if (value != null) {
+                        newUser.setBirthdayDate(Date.valueOf((String) value));
+                    } else {
+                        newUser.setBirthdayDate(null);
+                    }
+                }
+                case "club" -> {
+                    var club = clubService.GetByID((Integer) value);
+                    club.ifPresent(newUser::setClub);
+                }
+                case "status" -> {
+                    var status = clubStatusService.GetByID((Integer) value);
+                    status.ifPresent(newUser::setStatus);
+                }
+                case "role" -> {
+                    var role = clubRoleService.GetByID((Integer) value);
+                    role.ifPresent(newUser::setRole);
+                }
+                default -> {
+                }
+                // Игнорирование неизвестных полей
+            }
+        }
+        try {
+            repository.save(newUser);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 }

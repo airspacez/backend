@@ -40,7 +40,7 @@ public class UserAdditional implements UserDetails, Serializable {
     private String Name;
 
     @Column(name="UserEmail")
-    private String Email;
+    private String UserEmail;
 
     @Column(name="Gender")
     private Boolean IsMale;
@@ -66,7 +66,7 @@ public class UserAdditional implements UserDetails, Serializable {
     private String PhoneNumber;
 
     @Column(name="Archieved")
-    private Boolean IsArchived;
+    private Boolean IsArchieved;
     @JsonIgnoreProperties({"usersOfCLub","City", "hibernateLazyInitializer", "handler"})
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name="ClubID", nullable=false)

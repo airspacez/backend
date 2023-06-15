@@ -1,5 +1,6 @@
 package com.example.demo.controllers;
 
+import com.example.demo.domain.model.UserAdditional;
 import com.example.demo.domain.model.projections.UserAdditionalPropections.UsernameUserWithRatingProjection;
 import com.example.demo.domain.service.AnaliticsService;
 import com.example.demo.domain.model.Club;
@@ -16,6 +17,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Calendar;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 
 
 @RestController
@@ -74,7 +77,7 @@ public class TestController {
         return ResponseEntity.ok(uss.getByID(id));
     }
 
-        @GetMapping("/getUserStatistics/{id}")
+    @GetMapping("/getUserStatistics/{id}")
     public ResponseEntity<?> TestStats(@PathVariable int id)
     {
         return ResponseEntity.ok(uss.getByID(id));
@@ -104,6 +107,16 @@ public class TestController {
         return ResponseEntity.ok(authService.GetAuthenticatedUserData().getRole());
     }
 
+    @GetMapping("/getUserByEmail")
+    public ResponseEntity<?> getInfoUser(@RequestParam("mail") String mail) {
+        var user = userAdditionalService.getByEmail(mail);
+        if (user.isPresent()) {
+            return ResponseEntity.ok(user.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @GetMapping("/token")
     public void passwordResetToken(@RequestParam("mail") String mail)
     {
@@ -111,14 +124,24 @@ public class TestController {
         emailService.sendEmail(mail, "Токен", "Ваш токен: " + token);
     }
 
-    @GetMapping("/getUserByEmail")
-    public ResponseEntity<?> getInfoUser(@RequestParam("mail") String mail) {
-        var user = userAdditionalService.getByEmail(mail);
-        if (user.isPresent()) {
-            return ResponseEntity.ok(user.get());
-        } else {
-            return ResponseEntity.ok(false);
+    @GetMapping("/checkToken")
+    public ResponseEntity<String> checkToken(
+            @RequestParam(value = "mail", required = true) String mail,
+            @RequestParam(value = "token", required = true) String token) {
+
+        String tokenFromDB = userAdditionalService.getTokenByEmail(mail);
+        if (tokenFromDB != null && tokenFromDB.equals(token)) {
+            System.out.println("HAVE TOKEN!!!");
+            return ResponseEntity.ok("Token is valid!");
         }
+        System.out.println("NOT HAVE TOKEN!!!");
+        return ResponseEntity.notFound().build();
+    }
+
+    @GetMapping("/changePassword")
+    public void changePassword(@RequestParam("password") String password, @RequestParam("UserEmail") String UserEmail)
+    {
+        userAdditionalService.changePassword(password, UserEmail);
     }
 
     @GetMapping("/getLastGames")
@@ -128,11 +151,6 @@ public class TestController {
         var list = gameMemberService.getLastNGameMembersByUser(entity, PageRequest.of(0, 10));
         return ResponseEntity.ok(list);
     }
-
-
-
-
-
 
     @GetMapping("/getLastGames/{id}")
     public ResponseEntity<?> getLastNGames(@PathVariable int id)
@@ -237,9 +255,6 @@ public class TestController {
         return ResponseEntity.ok(entity);
     }
 
-
-
-
     @GetMapping("/statuses")
     public ResponseEntity<?> getStatuses()
     {
@@ -254,6 +269,19 @@ public class TestController {
         return ResponseEntity.ok(entity);
     }
 
+    @PostMapping("/createUser")
+    public ResponseEntity<?> createUser(@RequestBody Map<String, Object> updates)
+    {
+        try {
+            System.out.println("11!!!!!!");
+            System.out.println(updates);
+            userAdditionalService.createUser(updates);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            System.out.println("22222!!!!!!");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred during user update: "+ e.getMessage());
+        }
+    }
 
     @PatchMapping("/users/{id}")
     public ResponseEntity<?> patchUserData(@PathVariable int id, @RequestBody Map<String, Object> updates)

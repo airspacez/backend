@@ -15,7 +15,7 @@ public class UserAdditionalModel {
     private String AltNickname;
     private String Nickname;
     private String Name;
-    private String Email;
+    private String UserEmail;
     private Boolean IsMale;
     private String PhotoImagePath;
     @JsonIgnore
